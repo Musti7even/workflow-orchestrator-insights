@@ -20,9 +20,9 @@ export async function fetchWorkflowEntries(): Promise<WorkflowEntry[]> {
       id: item.id,
       timestamp: item.created_at,
       type: item.type as WorkflowType,
-      inputData: item.input_data,
+      inputData: item.input_data as Record<string, any>,
       status: item.status as WorkflowStatus,
-      outcome: item.outcome
+      outcome: item.outcome as Record<string, any> | undefined
     }));
   } catch (error) {
     console.error('Error fetching workflow entries:', error);
@@ -48,9 +48,9 @@ export async function fetchWorkflowEntry(id: string): Promise<WorkflowEntry | nu
       id: data.id,
       timestamp: data.created_at,
       type: data.type as WorkflowType,
-      inputData: data.input_data,
+      inputData: data.input_data as Record<string, any>,
       status: data.status as WorkflowStatus,
-      outcome: data.outcome
+      outcome: data.outcome as Record<string, any> | undefined
     };
   } catch (error) {
     console.error(`Error fetching workflow entry ${id}:`, error);
@@ -87,9 +87,9 @@ export async function createWorkflowEntry(
       id: data.id,
       timestamp: data.created_at,
       type: data.type as WorkflowType,
-      inputData: data.input_data,
+      inputData: data.input_data as Record<string, any>,
       status: data.status as WorkflowStatus,
-      outcome: data.outcome
+      outcome: data.outcome as Record<string, any> | undefined
     };
   } catch (error) {
     console.error('Error creating workflow entry:', error);
@@ -127,9 +127,9 @@ export async function updateWorkflowStatus(
       id: data.id,
       timestamp: data.created_at,
       type: data.type as WorkflowType,
-      inputData: data.input_data,
+      inputData: data.input_data as Record<string, any>,
       status: data.status as WorkflowStatus,
-      outcome: data.outcome
+      outcome: data.outcome as Record<string, any> | undefined
     };
   } catch (error) {
     console.error(`Error updating workflow entry ${id}:`, error);
