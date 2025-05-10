@@ -1,7 +1,6 @@
-
 import { toast } from "sonner";
 import { WorkflowEntry, WorkflowStatus, WorkflowType } from "@/types/workflow";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseAdmin } from "@/integrations/supabase/client";
 
 // Fetch all workflow entries from the database
 export async function fetchWorkflowEntries(): Promise<WorkflowEntry[]> {
@@ -151,7 +150,7 @@ export async function webhookCreateWorkflow(req: Request): Promise<Response> {
       });
     }
     
-    const { data: insertedData, error } = await supabase
+    const { data: insertedData, error } = await supabaseAdmin
       .from('workflows')
       .insert([
         { type, input_data: inputData, status: 'pending' }
@@ -206,7 +205,7 @@ export async function webhookUpdateWorkflow(req: Request): Promise<Response> {
       updateData.outcome = outcome;
     }
     
-    const { data: updatedData, error } = await supabase
+    const { data: updatedData, error } = await supabaseAdmin
       .from('workflows')
       .update(updateData)
       .eq('id', id)

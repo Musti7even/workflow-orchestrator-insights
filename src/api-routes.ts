@@ -1,5 +1,7 @@
-
 import { webhookCreateWorkflow, webhookUpdateWorkflow } from "./services/api";
+
+// Import supabase client at the top
+import { supabase, supabaseAdmin } from "@/integrations/supabase/client";
 
 export const apiRoutes = {
   // Route to create a new workflow entry
@@ -14,7 +16,7 @@ export const apiRoutes = {
 
   // Additional route to get all workflows (could be used later)
   'GET /api/workflows': async (req: Request) => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('workflows')
       .select('*')
       .order('created_at', { ascending: false });
@@ -38,7 +40,7 @@ export const apiRoutes = {
     const pathParts = url.pathname.split('/');
     const id = pathParts[pathParts.length - 1]; // Extract ID from URL
     
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('workflows')
       .select('*')
       .eq('id', id)
@@ -145,6 +147,3 @@ export const apiDocs = {
     `
   }
 };
-
-// Import supabase client at the top
-import { supabase } from "@/integrations/supabase/client";

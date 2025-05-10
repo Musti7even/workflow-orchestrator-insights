@@ -1,73 +1,20 @@
-# Welcome to your Lovable project
+This was my lovable prompt that crated this project:
 
-## Project info
+"""I am building a company/solutions for companies that automate workforces across some verticals.
+The ones I have are:
+- Customer Service
+- HR
+- Financial Analyst
 
-**URL**: https://lovable.dev/projects/dc8e91f5-fe1b-47f0-9201-d2501c8f7e0f
+In all off these verticals we have workflows that can be triggered. For example when we receive a new Email to our customer service request email where customer complain or ask about something.
+All these things are being handled automatically right now.
 
-## How can I edit this code?
+However something that is missing is a management platform where we see all processes/entities.
+So I want to have entries whenever a workflow is triggered. It should contain the timestamp, what type it is, what the input data is and the status. The status is pending/ongoing usually and at the end of the workflow I will update the status to done with the outcome. So basicalls 2-3 status with pending, failed, completed.
 
-There are several ways of editing your application.
+I would store these interactions and their current state in a supabase database. Lets keep it lightweight and quite wide/easy.
 
-**Use Lovable**
+The management paltform should have an amzing and well structured UI because we are going to pitch it infront of VC's.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/dc8e91f5-fe1b-47f0-9201-d2501c8f7e0f) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/dc8e91f5-fe1b-47f0-9201-d2501c8f7e0f) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Can you please develop the platform (without auth for me).
+Also make sure to add the backend (routes) that I can call with httprequests/webhooks to add a new entry and update the status."""
