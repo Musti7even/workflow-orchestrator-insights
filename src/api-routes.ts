@@ -6,32 +6,88 @@ import { supabase, supabaseAdmin } from "@/integrations/supabase/client";
 export const apiRoutes = {
   // Route to create a new workflow entry
   'POST /api/workflows': async (req: Request) => {
-    return await webhookCreateWorkflow(req);
-  },
-  
-  // Route to update an existing workflow entry
-  'PUT /api/workflows/:id': async (req: Request) => {
-    return await webhookUpdateWorkflow(req);
-  },
-
-  // Additional route to get all workflows (could be used later)
-  'GET /api/workflows': async (req: Request) => {
-    const { data, error } = await supabaseAdmin
-      .from('workflows')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+    console.log(`[API] POST /api/workflows - New workflow creation request received`);
+    try {
+      const response = await webhookCreateWorkflow(req);
+      return response;
+    } catch (error) {
+      console.error(`[API] POST /api/workflows - Error creating workflow:`, error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
+  },
+  
+  // Route to update an existing workflow entry
+  'PUT /api/workflows/:id': async (req: Request) => {
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 1];
+    console.log(`[API] PUT /api/workflows/${id} - Update request received`);
     
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    try {
+      const response = await webhookUpdateWorkflow(req);
+      return response;
+    } catch (error) {
+      console.error(`[API] PUT /api/workflows/${id} - Error updating workflow:`, error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  },
+
+  // Additional route to get all workflows (could be used later)
+  'GET /api/workflows': async (req: Request) => {
+    console.log(`[API] GET /api/workflows - Fetching all workflows`);
+    
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('workflows')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error(`[API] GET /api/workflows - Database error:`, error);
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Database error', 
+          details: error.message 
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
+      console.log(`[API] GET /api/workflows - Successfully retrieved ${data.length} workflows`);
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Retrieved ${data.length} workflows`,
+        data: data
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error(`[API] GET /api/workflows - Error fetching workflows:`, error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   },
   
   // Additional route to get a single workflow by ID
@@ -40,23 +96,60 @@ export const apiRoutes = {
     const pathParts = url.pathname.split('/');
     const id = pathParts[pathParts.length - 1]; // Extract ID from URL
     
-    const { data, error } = await supabaseAdmin
-      .from('workflows')
-      .select('*')
-      .eq('id', id)
-      .single();
+    console.log(`[API] GET /api/workflows/${id} - Fetching workflow by ID`);
     
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 404,
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('workflows')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        // Check if error is "not found"
+        if (error.code === 'PGRST116') {
+          console.error(`[API] GET /api/workflows/${id} - Workflow not found`);
+          return new Response(JSON.stringify({ 
+            success: false,
+            error: 'Workflow not found', 
+            details: `No workflow found with ID: ${id}`
+          }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        
+        console.error(`[API] GET /api/workflows/${id} - Database error:`, error);
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Database error', 
+          details: error.message 
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
+      console.log(`[API] GET /api/workflows/${id} - Workflow found: Type=${data.type}, Status=${data.status}`);
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Workflow retrieved successfully`,
+        data: data
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error(`[API] GET /api/workflows/${id} - Error fetching workflow:`, error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }), {
+        status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
-    
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
   }
 };
 
@@ -66,6 +159,8 @@ export async function handleApiRequest(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
   const method = req.method;
+  
+  console.log(`[API] ${method} ${path} - Request received`);
   
   // Find the matching route
   const routeKey = Object.keys(apiRoutes).find(key => {
@@ -90,11 +185,17 @@ export async function handleApiRequest(req: Request): Promise<Response> {
   });
   
   if (routeKey) {
+    console.log(`[API] ${method} ${path} - Matched route: ${routeKey}`);
     const handler = apiRoutes[routeKey as keyof typeof apiRoutes];
     return await handler(req);
   }
   
-  return new Response(JSON.stringify({ error: 'Not Found' }), {
+  console.log(`[API] ${method} ${path} - No matching route found`);
+  return new Response(JSON.stringify({ 
+    success: false,
+    error: 'Not Found', 
+    details: `No API endpoint exists at ${path}`
+  }), {
     status: 404,
     headers: { 'Content-Type': 'application/json' }
   });
