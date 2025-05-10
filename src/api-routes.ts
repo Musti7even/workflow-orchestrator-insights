@@ -305,22 +305,22 @@ export const apiDocs = {
   updateWorkflow: {
     method: 'PUT',
     url: '/api/workflows/:id',
-    description: 'Update the status of an existing workflow. The id parameter can be either the system-generated ID or a custom ID (if custom_id flag is set to true).',
+    description: 'Update the status of an existing workflow. You can either use the ID in the URL or provide a custom_id in the request body.',
     body: {
       status: 'pending | completed | failed',
       outcome: 'Optional object containing the workflow outcome',
-      custom_id: '(Optional) Set to true if the ID in the URL is a custom_id'
+      custom_id: '(Optional) The custom_id of the workflow to update. If provided, the ID in the URL is ignored.'
     },
     example: `
-    # Update by system ID
+    # Update by system ID from URL
     curl -X PUT /api/workflows/123 \\
     -H "Content-Type: application/json" \\
     -d '{"status":"completed","outcome":{"resolution":"Issue resolved","details":"Password reset complete"}}'
     
-    # Update by custom ID
-    curl -X PUT /api/workflows/cs-12345 \\
+    # Update by custom_id in request body
+    curl -X PUT /api/workflows/any-id-works-here \\
     -H "Content-Type: application/json" \\
-    -d '{"status":"completed","outcome":{"resolution":"Issue resolved"},"custom_id":true}'
+    -d '{"status":"completed","outcome":{"resolution":"Issue resolved"},"custom_id":"cs-12345"}'
     `
   },
   getAllWorkflows: {

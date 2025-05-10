@@ -304,40 +304,42 @@ export async function webhookUpdateWorkflow(req: Request): Promise<Response> {
     
     console.log(`[Webhook] Update workflow - Updating to status: ${status}, Outcome:`, outcome || 'none');
     
-    if (!idParam || !status) {
-      console.error(`[Webhook] Update workflow - Missing required fields: id=${idParam}, status=${status}`);
+    if (!status) {
+      console.error(`[Webhook] Update workflow - Missing required field: status=${status}`);
       return new Response(JSON.stringify({ 
         success: false,
         error: 'Missing required fields', 
-        details: `Required fields: id and status. ${!idParam ? 'ID is missing.' : ''} ${!status ? 'Status is missing.' : ''}`
+        details: `Required field: status is missing.`
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
     
-    // Determine if we're using custom_id or regular id
-    const isUsingCustomId = custom_id === true; // If custom_id flag is set to true, treat idParam as a custom_id
-    console.log(`[Webhook] Update workflow - Using ${isUsingCustomId ? 'custom_id' : 'id'} for lookup`);
-    
     // Check if workflow exists before updating
     let query = supabaseAdmin.from('workflows').select('*');
     
-    // Apply the appropriate filter based on whether we're using custom_id
-    if (isUsingCustomId) {
-      query = query.eq('custom_id', idParam);
+    // If custom_id is provided in the request body, use it for lookup
+    // Otherwise use the ID from the URL path
+    if (custom_id) {
+      console.log(`[Webhook] Update workflow - Using custom_id from request body: ${custom_id}`);
+      query = query.eq('custom_id', custom_id);
     } else {
+      console.log(`[Webhook] Update workflow - Using id from URL: ${idParam}`);
       query = query.eq('id', idParam);
     }
     
     const { data: existingWorkflow, error: checkError } = await query.single();
     
     if (checkError || !existingWorkflow) {
-      console.error(`[Webhook] Update workflow - Workflow not found with ${isUsingCustomId ? 'custom_id' : 'id'}: ${idParam}`);
+      const lookupField = custom_id ? 'custom_id' : 'id';
+      const lookupValue = custom_id || idParam;
+      
+      console.error(`[Webhook] Update workflow - Workflow not found with ${lookupField}: ${lookupValue}`);
       return new Response(JSON.stringify({ 
         success: false,
         error: 'Workflow not found', 
-        details: `No workflow found with ${isUsingCustomId ? 'custom_id' : 'id'}: ${idParam}`
+        details: `No workflow found with ${lookupField}: ${lookupValue}`
       }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -354,9 +356,9 @@ export async function webhookUpdateWorkflow(req: Request): Promise<Response> {
       .from('workflows')
       .update(updateData);
       
-    // Apply the appropriate filter based on whether we're using custom_id
-    if (isUsingCustomId) {
-      updateQuery = updateQuery.eq('custom_id', idParam);
+    // Use the same field for the update query that was used for lookup
+    if (custom_id) {
+      updateQuery = updateQuery.eq('custom_id', custom_id);
     } else {
       updateQuery = updateQuery.eq('id', idParam);
     }
@@ -378,12 +380,14 @@ export async function webhookUpdateWorkflow(req: Request): Promise<Response> {
     // Explicitly cast the response to our interface
     const typedData = updatedData as WorkflowDbResponse;
     
+    // Use the appropriate identifier for the success message
+    const workflowIdentifier = custom_id || idParam;
     console.log(`[Webhook] Update workflow - Successfully updated: ID=${typedData.id}, ${typedData.custom_id ? `Custom ID=${typedData.custom_id},` : ''} Status=${typedData.status}`);
     
     // Format the response to match our API structure
     const responseData = {
       success: true,
-      message: `Workflow ${idParam} updated successfully to status: ${status}`,
+      message: `Workflow ${workflowIdentifier} updated successfully to status: ${status}`,
       data: {
         id: typedData.id,
         custom_id: typedData.custom_id,
