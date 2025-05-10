@@ -2,14 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  PieChart, Pie, Cell
 } from "recharts";
 import { WorkflowEntry } from "@/types/workflow";
-import { 
-  ChartContainer, 
-  ChartTooltip,
-  ChartTooltipContent
-} from "@/components/ui/chart";
 
 interface MetricsProps {
   workflows: WorkflowEntry[];
@@ -29,9 +24,9 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
   }, {} as Record<string, number>);
   
   const typeData = [
-    { name: 'Customer Service', value: typeCount['customer_service'] || 0, color: '#9b87f5' },
-    { name: 'HR', value: typeCount['hr'] || 0, color: '#0EA5E9' },
-    { name: 'Financial Analyst', value: typeCount['financial_analyst'] || 0, color: '#F97316' },
+    { name: 'Customer Service', value: typeCount['customer_service'] || 0 },
+    { name: 'HR', value: typeCount['hr'] || 0 },
+    { name: 'Financial Analyst', value: typeCount['financial_analyst'] || 0 },
   ];
   
   const statusData = [
@@ -52,25 +47,13 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
     const count = workflows.filter(wf => wf.timestamp.startsWith(day)).length;
     return { 
       name: new Date(day).toLocaleDateString('en-US', { weekday: 'short' }),
-      value: count,
-      color: '#9b87f5'
+      value: count 
     };
   });
 
-  const chartConfig = {
-    pending: { color: '#8B5CF6' },
-    completed: { color: '#10B981' },
-    failed: { color: '#EF4444' },
-    day: { color: '#9b87f5' },
-    'customer_service': { color: '#9b87f5' },
-    'hr': { color: '#0EA5E9' },
-    'financial_analyst': { color: '#F97316' },
-  };
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {/* Metric Cards - All with consistent heights */}
-      <Card className="glass-card col-span-1 h-[140px]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card className="glass-card col-span-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Total Workflows</CardTitle>
         </CardHeader>
@@ -82,7 +65,7 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
         </CardContent>
       </Card>
       
-      <Card className="glass-card col-span-1 h-[140px]">
+      <Card className="glass-card col-span-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Pending</CardTitle>
         </CardHeader>
@@ -94,7 +77,7 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
         </CardContent>
       </Card>
       
-      <Card className="glass-card col-span-1 h-[140px]">
+      <Card className="glass-card col-span-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Completed</CardTitle>
         </CardHeader>
@@ -106,7 +89,7 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
         </CardContent>
       </Card>
       
-      <Card className="glass-card col-span-1 h-[140px]">
+      <Card className="glass-card col-span-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Failed</CardTitle>
         </CardHeader>
@@ -118,78 +101,45 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
         </CardContent>
       </Card>
       
-      {/* Charts with equal heights */}
-      <Card className="glass-card col-span-2 h-[320px]">
+      <Card className="glass-card col-span-1 md:col-span-2">
         <CardHeader>
           <CardTitle>Weekly Trend</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[220px]">
-            <ChartContainer
-              config={chartConfig}
-              className="h-full w-full"
-            >
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={workflowsByDay}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="rgba(255,255,255,0.6)" 
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={{ stroke: "rgba(255,255,255,0.2)" }}
-                />
-                <YAxis 
-                  stroke="rgba(255,255,255,0.6)" 
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={{ stroke: "rgba(255,255,255,0.2)" }}
-                />
-                <ChartTooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="rounded-lg border border-border/50 bg-card/90 p-2 shadow-lg backdrop-blur-sm">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: payload[0].payload.color }} />
-                            <span className="font-medium">{payload[0].payload.name}</span>
-                          </div>
-                          <div className="mt-1 font-mono text-sm font-medium">
-                            {payload[0].value} workflows
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
+                <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                <YAxis stroke="rgba(255,255,255,0.5)" />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '0.5rem',
+                    color: 'white',
                   }}
                 />
-                <Bar 
-                  dataKey="value" 
-                  fill="url(#colorGradient)" 
-                  radius={[4, 4, 0, 0]} 
-                  maxBarSize={40}
-                />
+                <Bar dataKey="value" fill="url(#colorGradient)" />
                 <defs>
                   <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#9b87f5" stopOpacity={0.9}/>
-                    <stop offset="100%" stopColor="#9b87f5" stopOpacity={0.4}/>
+                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.2}/>
                   </linearGradient>
                 </defs>
               </BarChart>
-            </ChartContainer>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
       
-      <Card className="glass-card col-span-2 h-[320px]">
+      <Card className="glass-card col-span-1 md:col-span-2">
         <CardHeader>
           <CardTitle>Status Distribution</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[220px]">
-            <ChartContainer
-              config={chartConfig}
-              className="h-full w-full"
-            >
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={statusData}
@@ -197,48 +147,24 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
                   cy="50%"
                   labelLine={false}
                   outerRadius={80}
-                  innerRadius={40}
+                  fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  paddingAngle={4}
-                  strokeWidth={2}
-                  stroke="rgba(0,0,0,0.1)"
                 >
                   {statusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Legend 
-                  layout="horizontal" 
-                  verticalAlign="bottom"
-                  align="center"
-                  iconType="circle"
-                  iconSize={10}
-                  formatter={(value) => (
-                    <span className="text-xs font-medium text-foreground">{value}</span>
-                  )}
-                  wrapperStyle={{ paddingTop: '20px' }}
-                />
-                <ChartTooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="rounded-lg border border-border/50 bg-card/90 p-2 shadow-lg backdrop-blur-sm">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: payload[0].payload.color }} />
-                            <span className="font-medium">{payload[0].payload.name}</span>
-                          </div>
-                          <div className="mt-1 font-mono text-sm font-medium">
-                            {payload[0].value} workflows ({((payload[0].value / totalWorkflows) * 100).toFixed(0)}%)
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '0.5rem',
+                    color: 'white',
                   }}
                 />
               </PieChart>
-            </ChartContainer>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
