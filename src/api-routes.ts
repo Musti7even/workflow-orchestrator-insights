@@ -3,6 +3,18 @@ import { webhookCreateWorkflow, webhookUpdateWorkflow } from "./services/api";
 // Import supabase client at the top
 import { supabase, supabaseAdmin } from "@/integrations/supabase/client";
 
+// Define a simpler type for workflow database responses
+type WorkflowRecord = {
+  id: string;
+  custom_id?: string;
+  created_at: string;
+  updated_at: string;
+  type: string;
+  input_data: any;
+  status: string;
+  outcome: any;
+};
+
 export const apiRoutes = {
   // Route to create a new workflow entry
   'POST /api/workflows': async (req: Request) => {
@@ -150,6 +162,78 @@ export const apiRoutes = {
         headers: { 'Content-Type': 'application/json' }
       });
     }
+  },
+
+  // Additional route to get a workflow by custom_id
+  'GET /api/workflows/custom/:customId': async (req: Request) => {
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const customId = pathParts[pathParts.length - 1]; // Extract custom ID from URL
+    
+    console.log(`[API] GET /api/workflows/custom/${customId} - Fetching workflow by custom ID`);
+    
+    try {
+      // @ts-ignore: Supabase typing issue
+      const { data, error } = await supabaseAdmin
+        .from('workflows')
+        .select('*')
+        .eq('custom_id', customId)
+        .single();
+      
+      if (error) {
+        // Check if error is "not found"
+        if (error.code === 'PGRST116') {
+          console.error(`[API] GET /api/workflows/custom/${customId} - Workflow not found`);
+          return new Response(JSON.stringify({ 
+            success: false,
+            error: 'Workflow not found', 
+            details: `No workflow found with custom ID: ${customId}`
+          }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        
+        console.error(`[API] GET /api/workflows/custom/${customId} - Database error:`, error);
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Database error', 
+          details: error.message 
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      
+      console.log(`[API] GET /api/workflows/custom/${customId} - Workflow found: Type=${data.type}, Status=${data.status}`);
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Workflow retrieved successfully`,
+        data: {
+          id: data.id,
+          // @ts-ignore: We know this property exists
+          custom_id: data.custom_id,
+          timestamp: data.created_at,
+          type: data.type,
+          inputData: data.input_data,
+          status: data.status,
+          outcome: data.outcome
+        }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error(`[API] GET /api/workflows/custom/${customId} - Error fetching workflow:`, error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   }
 };
 
@@ -209,26 +293,34 @@ export const apiDocs = {
     description: 'Create a new workflow entry',
     body: {
       type: 'customer_service | hr | financial_analyst',
-      inputData: 'Object containing input data for the workflow'
+      inputData: 'Object containing input data for the workflow',
+      custom_id: '(Optional) Custom identifier for the workflow'
     },
     example: `
     curl -X POST /api/workflows \\
     -H "Content-Type: application/json" \\
-    -d '{"type":"customer_service","inputData":{"email":"customer@example.com","subject":"Help Request"}}'
+    -d '{"type":"customer_service","inputData":{"email":"customer@example.com","subject":"Help Request"},"custom_id":"cs-12345"}'
     `
   },
   updateWorkflow: {
     method: 'PUT',
     url: '/api/workflows/:id',
-    description: 'Update the status of an existing workflow',
+    description: 'Update the status of an existing workflow. The id parameter can be either the system-generated ID or a custom ID (if custom_id flag is set to true).',
     body: {
       status: 'pending | completed | failed',
-      outcome: 'Optional object containing the workflow outcome'
+      outcome: 'Optional object containing the workflow outcome',
+      custom_id: '(Optional) Set to true if the ID in the URL is a custom_id'
     },
     example: `
-    curl -X PUT /api/workflows/wf-123 \\
+    # Update by system ID
+    curl -X PUT /api/workflows/123 \\
     -H "Content-Type: application/json" \\
     -d '{"status":"completed","outcome":{"resolution":"Issue resolved","details":"Password reset complete"}}'
+    
+    # Update by custom ID
+    curl -X PUT /api/workflows/cs-12345 \\
+    -H "Content-Type: application/json" \\
+    -d '{"status":"completed","outcome":{"resolution":"Issue resolved"},"custom_id":true}'
     `
   },
   getAllWorkflows: {
@@ -244,7 +336,15 @@ export const apiDocs = {
     url: '/api/workflows/:id',
     description: 'Get a specific workflow by ID',
     example: `
-    curl -X GET /api/workflows/wf-123
+    curl -X GET /api/workflows/123
+    `
+  },
+  getWorkflowByCustomId: {
+    method: 'GET',
+    url: '/api/workflows/custom/:customId',
+    description: 'Get a specific workflow by custom ID',
+    example: `
+    curl -X GET /api/workflows/custom/cs-12345
     `
   }
 };
