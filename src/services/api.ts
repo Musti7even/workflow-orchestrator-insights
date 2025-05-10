@@ -1,15 +1,29 @@
 
 import { toast } from "sonner";
 import { WorkflowEntry, WorkflowStatus, WorkflowType } from "@/types/workflow";
+import { supabase } from "@/integrations/supabase/client";
 
-// This would be replaced with your actual API endpoint
-const API_URL = '/api';
-
+// Fetch all workflow entries from the database
 export async function fetchWorkflowEntries(): Promise<WorkflowEntry[]> {
   try {
-    // In a real implementation, this would make an actual API call
-    // For now, we'll return mock data
-    return mockWorkflowEntries;
+    const { data, error } = await supabase
+      .from('workflows')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Transform the data to match our WorkflowEntry interface
+    return data.map(item => ({
+      id: item.id,
+      timestamp: item.created_at,
+      type: item.type as WorkflowType,
+      inputData: item.input_data,
+      status: item.status as WorkflowStatus,
+      outcome: item.outcome
+    }));
   } catch (error) {
     console.error('Error fetching workflow entries:', error);
     toast.error('Failed to load workflow entries');
@@ -19,12 +33,25 @@ export async function fetchWorkflowEntries(): Promise<WorkflowEntry[]> {
 
 export async function fetchWorkflowEntry(id: string): Promise<WorkflowEntry | null> {
   try {
-    // In a real implementation, this would make an actual API call
-    const entry = mockWorkflowEntries.find(entry => entry.id === id);
-    if (!entry) {
-      throw new Error('Entry not found');
+    const { data, error } = await supabase
+      .from('workflows')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      throw error;
     }
-    return entry;
+
+    // Transform the data to match our WorkflowEntry interface
+    return {
+      id: data.id,
+      timestamp: data.created_at,
+      type: data.type as WorkflowType,
+      inputData: data.input_data,
+      status: data.status as WorkflowStatus,
+      outcome: data.outcome
+    };
   } catch (error) {
     console.error(`Error fetching workflow entry ${id}:`, error);
     toast.error('Failed to load workflow entry');
@@ -37,17 +64,33 @@ export async function createWorkflowEntry(
   inputData: Record<string, any>
 ): Promise<WorkflowEntry | null> {
   try {
-    // In a real implementation, this would make an actual API call
-    const newEntry: WorkflowEntry = {
-      id: `wf-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      type,
-      inputData,
-      status: 'pending'
-    };
+    const { data, error } = await supabase
+      .from('workflows')
+      .insert([
+        { 
+          type, 
+          input_data: inputData,
+          status: 'pending' 
+        }
+      ])
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
     
     toast.success('New workflow created successfully');
-    return newEntry;
+    
+    // Return the formatted workflow entry
+    return {
+      id: data.id,
+      timestamp: data.created_at,
+      type: data.type as WorkflowType,
+      inputData: data.input_data,
+      status: data.status as WorkflowStatus,
+      outcome: data.outcome
+    };
   } catch (error) {
     console.error('Error creating workflow entry:', error);
     toast.error('Failed to create workflow entry');
@@ -61,20 +104,33 @@ export async function updateWorkflowStatus(
   outcome?: Record<string, any>
 ): Promise<WorkflowEntry | null> {
   try {
-    // In a real implementation, this would make an actual API call
-    const entry = mockWorkflowEntries.find(entry => entry.id === id);
-    if (!entry) {
-      throw new Error('Entry not found');
+    const updateData: any = { status };
+    if (outcome) {
+      updateData.outcome = outcome;
     }
     
-    const updatedEntry: WorkflowEntry = {
-      ...entry,
-      status,
-      outcome
-    };
+    const { data, error } = await supabase
+      .from('workflows')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
     
     toast.success(`Workflow status updated to ${status}`);
-    return updatedEntry;
+    
+    // Return the formatted workflow entry
+    return {
+      id: data.id,
+      timestamp: data.created_at,
+      type: data.type as WorkflowType,
+      inputData: data.input_data,
+      status: data.status as WorkflowStatus,
+      outcome: data.outcome
+    };
   } catch (error) {
     console.error(`Error updating workflow entry ${id}:`, error);
     toast.error('Failed to update workflow status');
@@ -82,103 +138,7 @@ export async function updateWorkflowStatus(
   }
 }
 
-// Mock data for development
-const mockWorkflowEntries: WorkflowEntry[] = [
-  {
-    id: 'wf-1',
-    timestamp: '2025-05-10T10:30:00Z',
-    type: 'customer_service',
-    inputData: {
-      email: 'customer@example.com',
-      subject: 'Product Return Request',
-      body: 'I received a damaged product and would like to return it.'
-    },
-    status: 'completed',
-    outcome: {
-      resolution: 'Return approved',
-      refundAmount: 149.99,
-      refundId: 'ref-12345'
-    }
-  },
-  {
-    id: 'wf-2',
-    timestamp: '2025-05-10T11:45:00Z',
-    type: 'hr',
-    inputData: {
-      employeeId: 'emp-789',
-      requestType: 'leave_request',
-      startDate: '2025-06-01',
-      endDate: '2025-06-07',
-      reason: 'Vacation'
-    },
-    status: 'pending',
-  },
-  {
-    id: 'wf-3',
-    timestamp: '2025-05-10T09:15:00Z',
-    type: 'financial_analyst',
-    inputData: {
-      reportId: 'fin-q2',
-      analysisType: 'quarterly_forecast',
-      department: 'Marketing'
-    },
-    status: 'failed',
-    outcome: {
-      error: 'Insufficient data for forecast',
-      missingFields: ['previous_quarter_spend', 'projected_growth']
-    }
-  },
-  {
-    id: 'wf-4',
-    timestamp: '2025-05-09T14:20:00Z',
-    type: 'customer_service',
-    inputData: {
-      email: 'feedback@company.org',
-      subject: 'Website Feedback',
-      body: 'Your new website design is fantastic and very easy to navigate!'
-    },
-    status: 'completed',
-    outcome: {
-      resolution: 'Feedback recorded',
-      category: 'positive',
-      assignedTo: 'product-team'
-    }
-  },
-  {
-    id: 'wf-5',
-    timestamp: '2025-05-09T16:50:00Z',
-    type: 'hr',
-    inputData: {
-      employeeId: 'emp-456',
-      requestType: 'onboarding',
-      startDate: '2025-06-15',
-      position: 'Senior Developer',
-      department: 'Engineering'
-    },
-    status: 'pending'
-  },
-  {
-    id: 'wf-6',
-    timestamp: '2025-05-09T13:10:00Z',
-    type: 'financial_analyst',
-    inputData: {
-      clientId: 'cl-789',
-      requestType: 'investment_analysis',
-      portfolioValue: 1500000,
-      riskProfile: 'moderate'
-    },
-    status: 'completed',
-    outcome: {
-      recommendation: 'Diversify into tech and green energy',
-      expectedReturn: '8.5%',
-      confidenceLevel: 'high'
-    }
-  }
-];
-
-// These functions would be implemented in a real API 
-// to handle webhook/HTTP requests for workflows
-
+// These functions handle webhook/HTTP requests for workflows
 export async function webhookCreateWorkflow(req: Request): Promise<Response> {
   try {
     const data = await req.json();
@@ -191,16 +151,28 @@ export async function webhookCreateWorkflow(req: Request): Promise<Response> {
       });
     }
     
-    // In a real implementation, this would insert into a database
-    const newEntry: WorkflowEntry = {
-      id: `wf-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      type,
-      inputData,
-      status: 'pending'
+    const { data: insertedData, error } = await supabase
+      .from('workflows')
+      .insert([
+        { type, input_data: inputData, status: 'pending' }
+      ])
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Format the response to match our API structure
+    const responseData = {
+      id: insertedData.id,
+      timestamp: insertedData.created_at,
+      type: insertedData.type,
+      inputData: insertedData.input_data,
+      status: insertedData.status
     };
     
-    return new Response(JSON.stringify(newEntry), {
+    return new Response(JSON.stringify(responseData), {
       status: 201,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -215,8 +187,12 @@ export async function webhookCreateWorkflow(req: Request): Promise<Response> {
 
 export async function webhookUpdateWorkflow(req: Request): Promise<Response> {
   try {
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 1]; // Extract ID from URL
+    
     const data = await req.json();
-    const { id, status, outcome } = data;
+    const { status, outcome } = data;
     
     if (!id || !status) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -225,16 +201,31 @@ export async function webhookUpdateWorkflow(req: Request): Promise<Response> {
       });
     }
     
-    // In a real implementation, this would update a database record
-    // For now, we'll pretend we found and updated the entry
-    const updatedEntry = {
-      id,
-      status,
-      outcome,
-      updated: new Date().toISOString()
+    const updateData: any = { status };
+    if (outcome) {
+      updateData.outcome = outcome;
+    }
+    
+    const { data: updatedData, error } = await supabase
+      .from('workflows')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Format the response to match our API structure
+    const responseData = {
+      id: updatedData.id,
+      status: updatedData.status,
+      outcome: updatedData.outcome,
+      updated: updatedData.updated_at
     };
     
-    return new Response(JSON.stringify(updatedEntry), {
+    return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

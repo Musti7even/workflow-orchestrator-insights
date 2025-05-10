@@ -10,6 +10,51 @@ export const apiRoutes = {
   // Route to update an existing workflow entry
   'PUT /api/workflows/:id': async (req: Request) => {
     return await webhookUpdateWorkflow(req);
+  },
+
+  // Additional route to get all workflows (could be used later)
+  'GET /api/workflows': async (req: Request) => {
+    const { data, error } = await supabase
+      .from('workflows')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  },
+  
+  // Additional route to get a single workflow by ID
+  'GET /api/workflows/:id': async (req: Request) => {
+    const url = new URL(req.url);
+    const pathParts = url.pathname.split('/');
+    const id = pathParts[pathParts.length - 1]; // Extract ID from URL
+    
+    const { data, error } = await supabase
+      .from('workflows')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 };
 
@@ -64,8 +109,8 @@ export const apiDocs = {
       inputData: 'Object containing input data for the workflow'
     },
     example: `
-    curl -X POST /api/workflows \
-    -H "Content-Type: application/json" \
+    curl -X POST /api/workflows \\
+    -H "Content-Type: application/json" \\
     -d '{"type":"customer_service","inputData":{"email":"customer@example.com","subject":"Help Request"}}'
     `
   },
@@ -78,9 +123,28 @@ export const apiDocs = {
       outcome: 'Optional object containing the workflow outcome'
     },
     example: `
-    curl -X PUT /api/workflows/wf-123 \
-    -H "Content-Type: application/json" \
+    curl -X PUT /api/workflows/wf-123 \\
+    -H "Content-Type: application/json" \\
     -d '{"status":"completed","outcome":{"resolution":"Issue resolved","details":"Password reset complete"}}'
+    `
+  },
+  getAllWorkflows: {
+    method: 'GET',
+    url: '/api/workflows',
+    description: 'Get all workflow entries',
+    example: `
+    curl -X GET /api/workflows
+    `
+  },
+  getWorkflowById: {
+    method: 'GET',
+    url: '/api/workflows/:id',
+    description: 'Get a specific workflow by ID',
+    example: `
+    curl -X GET /api/workflows/wf-123
     `
   }
 };
+
+// Import supabase client at the top
+import { supabase } from "@/integrations/supabase/client";
