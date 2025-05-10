@@ -106,6 +106,14 @@ export default function WorkflowDetail() {
     }
   };
 
+  // Handle status change with proper type checking
+  const handleStatusChange = (value: string) => {
+    // Only set the status if it's one of our valid WorkflowStatus types
+    if (value === 'pending' || value === 'completed' || value === 'failed') {
+      setNewStatus(value);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -228,7 +236,9 @@ export default function WorkflowDetail() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <Select value={newStatus} onValueChange={setNewStatus}>
+                <Select 
+                  value={newStatus} 
+                  onValueChange={handleStatusChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
