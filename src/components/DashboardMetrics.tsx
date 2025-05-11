@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WorkflowEntry } from "@/types/workflow";
 import {
@@ -227,16 +226,18 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]"> {/* Increased height for better display */}
+          {/* Increased height for better display */}
+          <div className="h-[300px]">
             <ChartContainer
               config={{
                 volume: { color: "#8B5CF6" }
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
+                {/* BarChart with appropriate margins */}
                 <BarChart 
                   data={workflowsByDay} 
-                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }} {/* Added appropriate margins */}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis 
@@ -251,11 +252,12 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
                     allowDecimals={false}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
+                  {/* Bar with controlled width */}
                   <Bar 
                     dataKey="value"
                     fill="#8B5CF6" 
                     radius={[4, 4, 0, 0]}
-                    maxBarSize={50} {/* Control bar width */}
+                    maxBarSize={50}
                   />
                 </BarChart>
               </ResponsiveContainer>
