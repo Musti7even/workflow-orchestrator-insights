@@ -44,7 +44,7 @@ function AppSidebar() {
           <h1 className="text-lg font-bold text-white">Workflow Automation</h1>
           <p className="text-xs text-muted-foreground">Management Platform</p>
           <div className="mt-4">
-            <Badge variant="secondary" className="text-xs">VC Pitch Ready</Badge>
+            <Badge variant="secondary" className="text-xs">OPUS</Badge>
           </div>
         </div>
       </SidebarHeader>
