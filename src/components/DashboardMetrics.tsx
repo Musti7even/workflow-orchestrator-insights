@@ -227,29 +227,35 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[250px]">
+          <div className="h-[300px]"> {/* Increased height for better display */}
             <ChartContainer
               config={{
                 volume: { color: "#8B5CF6" }
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={workflowsByDay}>
+                <BarChart 
+                  data={workflowsByDay} 
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }} {/* Added appropriate margins */}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis 
                     dataKey="name" 
                     stroke="rgba(255,255,255,0.7)" 
                     tick={{ fill: 'rgba(255,255,255,0.7)' }}
+                    padding={{ left: 10, right: 10 }}
                   />
                   <YAxis 
                     stroke="rgba(255,255,255,0.7)" 
                     tick={{ fill: 'rgba(255,255,255,0.7)' }}
+                    allowDecimals={false}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="value"
                     fill="#8B5CF6" 
                     radius={[4, 4, 0, 0]}
+                    maxBarSize={50} {/* Control bar width */}
                   />
                 </BarChart>
               </ResponsiveContainer>

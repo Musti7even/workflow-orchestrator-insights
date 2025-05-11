@@ -28,7 +28,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-10 animate-fade-in"> {/* Increased spacing between main sections */}
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-gradient">Dashboard</h1>
@@ -49,7 +49,7 @@ export default function Dashboard() {
         <DashboardMetrics workflows={workflows} />
       )}
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-6 pb-6"> {/* Added bottom padding */}
         <Card className="glass-card overflow-hidden">
           <CardHeader>
             <CardTitle>Recent Workflows</CardTitle>

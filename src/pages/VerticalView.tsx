@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type VerticalType = "customer-service" | "hr" | "financial-analysis";
 
-const verticalMapping: Record<VerticalType, string> = {
+const verticalMapping: Record<VerticalType, "customer_service" | "hr" | "financial_analyst"> = {
   "customer-service": "customer_service",
   "hr": "hr",
   "financial-analysis": "financial_analyst"
