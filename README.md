@@ -1,7 +1,5 @@
 [Visit our website!](https://wondrous-tetragon-150018.framer.app/)
 
-![Landing Page](https://wondrous-tetragon-150018.framer.app/)
-
 
 This was my lovable prompt that crated this project:
 
