@@ -1,10 +1,24 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from "recharts";
 import { WorkflowEntry } from "@/types/workflow";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from "@/components/ui/chart";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart, 
+  Pie, 
+  Cell 
+} from "recharts";
+import { CircleDollarSign, MessageSquare, User } from "lucide-react";
 
 interface MetricsProps {
   workflows: WorkflowEntry[];
@@ -24,9 +38,9 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
   }, {} as Record<string, number>);
   
   const typeData = [
-    { name: 'Customer Service', value: typeCount['customer_service'] || 0 },
-    { name: 'HR', value: typeCount['hr'] || 0 },
-    { name: 'Financial Analyst', value: typeCount['financial_analyst'] || 0 },
+    { name: 'Customer Service', value: typeCount['customer_service'] || 0, color: '#9b87f5' },
+    { name: 'HR', value: typeCount['hr'] || 0, color: '#0EA5E9' },
+    { name: 'Financial Analysis', value: typeCount['financial_analyst'] || 0, color: '#10B981' },
   ];
   
   const statusData = [
@@ -52,7 +66,7 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <Card className="glass-card col-span-1">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Total Workflows</CardTitle>
@@ -101,70 +115,145 @@ export default function DashboardMetrics({ workflows }: MetricsProps) {
         </CardContent>
       </Card>
       
-      <Card className="glass-card col-span-1 md:col-span-2">
+      <Card className="glass-card col-span-2 md:row-span-2">
         <CardHeader>
-          <CardTitle>Weekly Trend</CardTitle>
+          <CardTitle className="flex items-center">
+            <MessageSquare className="mr-2 h-5 w-5" />
+            Vertical Distribution
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={workflowsByDay}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
-                <YAxis stroke="rgba(255,255,255,0.5)" />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '0.5rem',
-                    color: 'white',
-                  }}
+          <div className="h-[250px]">
+            <ChartContainer
+              config={{
+                customerService: { color: "#9b87f5" },
+                hr: { color: "#0EA5E9" },
+                financialAnalyst: { color: "#10B981" }
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={typeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    paddingAngle={5}
+                    label={({ name, percent }) => 
+                      `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {typeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
+          <div className="flex justify-center mt-4 space-x-6">
+            {typeData.map((entry) => (
+              <div key={entry.name} className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2" 
+                  style={{ backgroundColor: entry.color }}
                 />
-                <Bar dataKey="value" fill="url(#colorGradient)" />
-                <defs>
-                  <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.2}/>
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
+                <span>{entry.name}: {entry.value}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card col-span-2 md:row-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <User className="mr-2 h-5 w-5" />
+            Status Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[250px]">
+            <ChartContainer
+              config={{
+                pending: { color: "#8B5CF6" },
+                completed: { color: "#10B981" },
+                failed: { color: "#EF4444" }
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    paddingAngle={5}
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
+          <div className="flex justify-center mt-4 space-x-6">
+            {statusData.map((entry) => (
+              <div key={entry.name} className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span>{entry.name}: {entry.value}</span>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
       
-      <Card className="glass-card col-span-1 md:col-span-2">
+      <Card className="glass-card col-span-4">
         <CardHeader>
-          <CardTitle>Status Distribution</CardTitle>
+          <CardTitle className="flex items-center">
+            <CircleDollarSign className="mr-2 h-5 w-5" />
+            Weekly Trend
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '0.5rem',
-                    color: 'white',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="h-[250px]">
+            <ChartContainer
+              config={{
+                volume: { color: "#8B5CF6" }
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={workflowsByDay}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="rgba(255,255,255,0.7)" 
+                    tick={{ fill: 'rgba(255,255,255,0.7)' }}
+                  />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.7)" 
+                    tick={{ fill: 'rgba(255,255,255,0.7)' }}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="value"
+                    fill="#8B5CF6" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </CardContent>
       </Card>

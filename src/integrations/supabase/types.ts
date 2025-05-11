@@ -12,6 +12,7 @@ export type Database = {
       workflows: {
         Row: {
           created_at: string
+          custom_id: string | null
           id: string
           input_data: Json
           outcome: Json | null
@@ -21,6 +22,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_id?: string | null
           id?: string
           input_data?: Json
           outcome?: Json | null
@@ -30,6 +32,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_id?: string | null
           id?: string
           input_data?: Json
           outcome?: Json | null

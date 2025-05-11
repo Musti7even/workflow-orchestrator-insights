@@ -4,6 +4,7 @@ import { useParams, Navigate } from "react-router-dom";
 import { WorkflowEntry } from "@/types/workflow";
 import { fetchWorkflowEntries } from "@/services/api";
 import WorkflowEntryComponent from "@/components/WorkflowEntry";
+import VerticalMetrics from "@/components/verticals/VerticalMetrics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type VerticalType = "customer-service" | "hr" | "financial-analysis";
@@ -62,23 +63,35 @@ export default function VerticalView() {
         </p>
       </div>
 
-      <div className="space-y-6">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <p>Loading workflows...</p>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <p>Loading workflows...</p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {/* Analytics Dashboard for this vertical */}
+          <VerticalMetrics 
+            workflows={workflows} 
+            verticalType={verticalMapping[vertical]} 
+          />
+          
+          {/* Workflows List */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">All Workflows</h2>
+            {workflows.length === 0 ? (
+              <Card className="glass-card p-8 text-center">
+                <p>No {getVerticalTitle(vertical).toLowerCase()} workflows found.</p>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {workflows.map((workflow) => (
+                  <WorkflowEntryComponent key={workflow.id} workflow={workflow} />
+                ))}
+              </div>
+            )}
           </div>
-        ) : workflows.length === 0 ? (
-          <Card className="glass-card p-8 text-center">
-            <p>No {getVerticalTitle(vertical).toLowerCase()} workflows found.</p>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {workflows.map((workflow) => (
-              <WorkflowEntryComponent key={workflow.id} workflow={workflow} />
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
