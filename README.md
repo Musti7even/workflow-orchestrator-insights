@@ -1,7 +1,6 @@
 [Visit our website!](https://wondrous-tetragon-150018.framer.app/)
 
-![Landing Page]()
-![Uploading Screenshot 2025-05-11 at 06.06.11.png…]()
+![Landing Page](https://wondrous-tetragon-150018.framer.app/)
 
 
 This was my lovable prompt that crated this project:
